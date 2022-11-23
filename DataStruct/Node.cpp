@@ -2,11 +2,7 @@
 
 struct Node
 {
-    Dictionary *data;
+    const Dictionary *data;
     Node *left;
     Node *right;
-    ~Node()
-    {
-        delete data;
-    }
 };

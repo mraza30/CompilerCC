@@ -3,30 +3,35 @@ class HashTable
 {
 private:
     const int size = 13;
-    LinkedList *hashArray = new LinkedList[size];
+    LinkedList *const hashArray = new LinkedList[size];
 
 public:
-    void add(Dictionary *data)
+    void add(const Dictionary *const data)
     {
-        int index = hashFunction(data);
+        int index = hashFunction(data->key);
         hashArray[index].push_back(data);
     }
-    bool ifExist(Dictionary *data) const
-    {
-        int index = hashFunction(data);
-        return hashArray[index].ifExist(data);
-    }
-    int hashFunction(Dictionary *data) const
+    int hashFunction(std::string const &key) const
     {
         int hash = 0;
 
-        for (int i = 0; i < data->key.length(); i++)
+        for (int i = 0; i < key.length(); i++)
         {
-            hash += data->key[i];
+            hash += key[i];
             if (i == 2)
                 break;
         }
-        return hash % size;
+        return abs(hash % size);
+    }
+    bool ifExist(std::string const &key) const
+    {
+        int index = hashFunction(key);
+        return hashArray[index].ifExist(key);
+    }
+    int getValue(std::string const &key) const
+    {
+        int index = hashFunction(key);
+        return hashArray[index].getValue(key);
     }
     void display() const
     {

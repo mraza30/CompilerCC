@@ -63,6 +63,8 @@ public:
 
     void readInput(std::string const &filename)
     {
+        std::ofstream token("token.txt");
+        std::ofstream error("error.txt");
         std::ifstream input(filename);
         if (!input.is_open())
         {
@@ -77,6 +79,7 @@ public:
 
     int getNextState(char const &Char, int const &State)
     {
+        return 1;
     }
 
     void displaySimga() const

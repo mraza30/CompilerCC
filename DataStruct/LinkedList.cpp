@@ -1,5 +1,5 @@
 #include "Node.cpp"
-
+#include <iostream>
 class LinkedList
 {
 private:
@@ -7,14 +7,14 @@ private:
     Node *tail = nullptr;
 
 public:
-    Node *create_node(Dictionary *data) const
+    Node *create_node(const Dictionary *const data) const
     {
         Node *new_node = new Node();
         new_node->data = data;
         new_node->left = new_node->right = nullptr;
         return new_node;
     }
-    void push_front(Dictionary *data)
+    void push_front(const Dictionary *const data)
     {
         Node *new_node = create_node(data);
         if (!head)
@@ -28,7 +28,7 @@ public:
             head = new_node;
         }
     }
-    void push_back(Dictionary *data)
+    void push_back(const Dictionary *const data)
     {
         Node *new_node = create_node(data);
         if (!head)
@@ -42,33 +42,34 @@ public:
             tail = new_node;
         }
     }
-    bool ifExist(Dictionary *data) const
+    bool ifExist(std::string const &key) const
     {
         Node *temp = head;
         while (temp)
         {
-            if (data->key == temp->data->key)
+            if (key == temp->data->key)
                 return true;
+            temp = temp->right;
         }
         return false;
     }
-    bool ifExist(Dictionary *data) const
+    int getValue(std::string const &key) const
     {
         Node *temp = head;
         while (temp)
         {
-            if (data->key == temp->data->key)
-                return true;
+            if (key == temp->data->key)
+                return temp->data->value;
+            temp = temp->right;
         }
-        return false;
+        return -1;
     }
     void display() const
     {
         Node *temp = head;
         while (temp)
         {
-            temp->data->display();
-            std::cout << " => ";
+            std::cout << temp->data->key << ":" << temp->data->value << " -> ";
             temp = temp->right;
         }
     }
