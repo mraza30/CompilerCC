@@ -95,6 +95,7 @@ public:
                     {
                         token << "<identifier, " << word << ">\n";
                     }
+                    i--;
                     state = 0;
                     word.clear();
                 }
@@ -109,6 +110,7 @@ public:
                     {
                         error << "<error, " << word << ">\n";
                     }
+                    i--;
                     state = 0;
                     word.clear();
                 }
@@ -116,6 +118,7 @@ public:
                 {
                     getWord(buffer, word);
                     token << "<number, " << word << ">\n";
+                    i--;
                     state = 0;
                     word.clear();
                 }
@@ -130,6 +133,7 @@ public:
                 {
                     getWord(buffer, word);
                     token << "<operator, " << word << ">\n";
+                    i--;
                     state = 0;
                     word.clear();
                 }
@@ -144,13 +148,14 @@ public:
                 {
                     getWord(buffer, word);
                     token << "<punctuation, " << word << ">\n";
+                    i--;
                     state = 0;
                     word.clear();
                 }
                 else if (state == 23)
                 {
                     getWord(buffer, word, false);
-                    if (word != "\n" && word != " ")
+                    if (!std::isspace(word[0]))
                         error << "<error, " << word << ">\n";
                     state = 0;
                     word.clear();
@@ -158,8 +163,9 @@ public:
                 else if (state == 24)
                 {
                     getWord(buffer, word);
-                    if (word != "\n" && word != " ")
+                    if (!std::isspace(word[0]))
                         error << "<error, " << word << ">\n";
+                    i--;
                     state = 0;
                     word.clear();
                 }
