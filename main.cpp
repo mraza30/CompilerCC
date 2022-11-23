@@ -6,4 +6,5 @@ int main()
     // s.displayKeyword();
     s.readDfa("dfa.txt");
     // s.displaySimga();
+    s.readInput("input.txt");
 }

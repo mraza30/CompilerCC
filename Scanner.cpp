@@ -1,7 +1,7 @@
 #include "DataStruct/HashTable.cpp"
-#include <cstring>
 #include <fstream>
 #include <vector>
+#include <queue>
 class Scanner
 {
 private:
@@ -74,12 +74,128 @@ public:
         std::string line;
         while (std::getline(input, line))
         {
+            line.push_back('\n');
+
+            std::queue<char> buffer;
+            std::string word;
+
+            int state = 0;
+            for (int i = 0; i < line.length(); i++)
+            {
+                buffer.push(line[i]);
+                getNextState(line[i], state);
+                if (state == 16)
+                {
+                    getWord(buffer, word);
+                    if (keyword.ifExist(word))
+                    {
+                        token << "<keyword, " << word << ">\n";
+                    }
+                    else
+                    {
+                        token << "<identifier, " << word << ">\n";
+                    }
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 18)
+                {
+                    getWord(buffer, word);
+                    if (keyword.ifExist(word))
+                    {
+                        token << "<keyword, " << word << ">\n";
+                    }
+                    else
+                    {
+                        error << "<error, " << word << ">\n";
+                    }
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 17)
+                {
+                    getWord(buffer, word);
+                    token << "<number, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 19)
+                {
+                    getWord(buffer, word, false);
+                    token << "<operator, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 20)
+                {
+                    getWord(buffer, word);
+                    token << "<operator, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 21)
+                {
+                    getWord(buffer, word, false);
+                    token << "<punctuation, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 22)
+                {
+                    getWord(buffer, word);
+                    token << "<punctuation, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 23)
+                {
+                    getWord(buffer, word, false);
+                    if (word != "\n" && word != " ")
+                        error << "<error, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+                else if (state == 24)
+                {
+                    getWord(buffer, word);
+                    if (word != "\n" && word != " ")
+                        error << "<error, " << word << ">\n";
+                    state = 0;
+                    word.clear();
+                }
+            }
         }
     }
 
-    int getNextState(char const &Char, int const &State)
+    void getWord(std::queue<char> &Queue, std::string &word, bool clear = true) const
     {
-        return 1;
+        int size = Queue.size();
+        if (clear)
+            size--;
+        int i = 0;
+        for (; i < size; i++)
+        {
+            word.push_back(Queue.front());
+            Queue.pop();
+        }
+        if (clear)
+            Queue.pop();
+    }
+
+    void getNextState(const char &Char, int &state) const
+    {
+        if (isLetter(Char))
+        {
+            state = dfa[state][sigma.getValue("L")];
+        }
+        else if (isNumber(Char))
+        {
+            state = dfa[state][sigma.getValue("N")];
+        }
+        else
+        {
+            state = dfa[state][sigma.getValue(std::string(1, Char))];
+        }
     }
 
     void displaySimga() const

@@ -8,8 +8,7 @@ private:
 public:
     void add(const Dictionary *const data)
     {
-        int index = hashFunction(data->key);
-        hashArray[index].push_back(data);
+        hashArray[hashFunction(data->key)].push_back(data);
     }
     int hashFunction(std::string const &key) const
     {
@@ -25,13 +24,12 @@ public:
     }
     bool ifExist(std::string const &key) const
     {
-        int index = hashFunction(key);
-        return hashArray[index].ifExist(key);
+        return hashArray[hashFunction(key)].ifExist(key);
     }
     int getValue(std::string const &key) const
     {
-        int index = hashFunction(key);
-        return hashArray[index].getValue(key);
+        int state = hashArray[hashFunction(key)].getValue(key);
+        return state != -1 ? state : hashArray[hashFunction("O")].getValue("O");
     }
     void display() const
     {
