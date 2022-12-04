@@ -12,15 +12,7 @@ public:
     }
     int hashFunction(std::string const &key) const
     {
-        int hash = 0;
-
-        for (int i = 0; i < key.length(); i++)
-        {
-            hash += key[i];
-            if (i == 2)
-                break;
-        }
-        return abs(hash % size);
+        return abs((key[0] + key.length()) % size);
     }
     bool ifExist(std::string const &key) const
     {
@@ -28,8 +20,7 @@ public:
     }
     int getValue(std::string const &key) const
     {
-        int state = hashArray[hashFunction(key)].getValue(key);
-        return state != -1 ? state : hashArray[hashFunction("O")].getValue("O");
+        return hashArray[hashFunction(key)].getValue(key);
     }
     void display() const
     {

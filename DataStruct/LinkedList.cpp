@@ -7,16 +7,15 @@ private:
     Node *tail = nullptr;
 
 public:
-    Node *create_node(const Dictionary *const data) const
+    Node *const create_node(const Dictionary *const data) const
     {
-        Node *new_node = new Node();
-        new_node->data = data;
+        Node *const new_node = new Node(data);
         new_node->left = new_node->right = nullptr;
         return new_node;
     }
     void push_front(const Dictionary *const data)
     {
-        Node *new_node = create_node(data);
+        Node *const new_node = create_node(data);
         if (!head)
         {
             head = tail = new_node;
@@ -30,7 +29,7 @@ public:
     }
     void push_back(const Dictionary *const data)
     {
-        Node *new_node = create_node(data);
+        Node *const new_node = create_node(data);
         if (!head)
         {
             head = tail = new_node;
@@ -44,7 +43,7 @@ public:
     }
     bool ifExist(std::string const &key) const
     {
-        Node *temp = head;
+        const Node *temp = head;
         while (temp)
         {
             if (key == temp->data->key)
@@ -55,7 +54,7 @@ public:
     }
     int getValue(std::string const &key) const
     {
-        Node *temp = head;
+        const Node *temp = head;
         while (temp)
         {
             if (key == temp->data->key)
@@ -66,11 +65,22 @@ public:
     }
     void display() const
     {
-        Node *temp = head;
+        const Node *temp = head;
         while (temp)
         {
             std::cout << temp->data->key << ":" << temp->data->value << " -> ";
             temp = temp->right;
         }
+    }
+    ~LinkedList()
+    {
+        Node *current = head;
+        while (current)
+        {
+            Node *next = current->right;
+            delete current;
+            current = next;
+        }
+        head = tail = nullptr;
     }
 };

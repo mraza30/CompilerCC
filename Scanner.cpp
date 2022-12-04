@@ -16,15 +16,16 @@ public:
         if (!file.is_open())
         {
             std::cout << "Error opening file " << filename << std::endl;
-            exit(0);
+            exit(1);
         }
         std::string word;
         int value = 0;
-        while (std::getline(file, word))
+        while (file >> word)
         {
             keyword.add(new Dictionary(word, value));
             value++;
         }
+        file.close();
     }
 
     void readDfa(std::string const &filename)
@@ -33,21 +34,19 @@ public:
         if (!file.is_open())
         {
             std::cout << "Error opening file " << filename << std::endl;
-            exit(0);
+            exit(1);
         }
         std::string line;
-        int row = 0;
+        unsigned int row = 0;
         while (std::getline(file, line))
         {
-            int col = 0;
+            unsigned int col = 0;
             std::vector<std::string> words;
             tokenize(line, "\t", words);
             for (auto &word : words)
             {
                 if (row == 0)
-                {
                     sigma.add(new Dictionary(word, col));
-                }
                 else
                 {
                     dfa.resize(row + 1);
@@ -59,6 +58,7 @@ public:
             // std::cout << '\n';
             row++;
         }
+        file.close();
     }
 
     void readInput(std::string const &filename)
@@ -69,7 +69,7 @@ public:
         if (!input.is_open())
         {
             std::cout << "Error opening file " << filename << std::endl;
-            exit(0);
+            exit(1);
         }
         std::string line;
         while (std::getline(input, line))
@@ -79,128 +79,102 @@ public:
             std::queue<char> buffer;
             std::string word;
 
-            int state = 0;
+            unsigned int state = 0;
             for (int i = 0; i < line.length(); i++)
             {
                 buffer.push(line[i]);
                 getNextState(line[i], state);
                 if (state == 16)
                 {
-                    getWord(buffer, word);
-                    if (keyword.ifExist(word))
-                    {
-                        token << "<keyword, " << word << ">\n";
-                    }
-                    else
-                    {
-                        token << "<identifier, " << word << ">\n";
-                    }
-                    i--;
-                    state = 0;
-                    word.clear();
+                    getWord(buffer, word, state, i);
+                    keyword.ifExist(word)
+                        ? token << "<keyword, " << word << ">\n"
+                        : token << "<identifier, " << word << ">\n";
                 }
                 else if (state == 18)
                 {
-                    getWord(buffer, word);
-                    if (keyword.ifExist(word))
-                    {
-                        token << "<keyword, " << word << ">\n";
-                    }
-                    else
-                    {
-                        error << "<error, " << word << ">\n";
-                    }
-                    i--;
-                    state = 0;
-                    word.clear();
+                    getWord(buffer, word, state, i);
+                    keyword.ifExist(word)
+                        ? token << "<keyword, " << word << ">\n"
+                        : error << "<error, " << word << ">\n";
                 }
                 else if (state == 17)
                 {
-                    getWord(buffer, word);
+                    getWord(buffer, word, state, i);
                     token << "<number, " << word << ">\n";
-                    i--;
-                    state = 0;
-                    word.clear();
                 }
                 else if (state == 19)
                 {
-                    getWord(buffer, word, false);
+                    getWord(buffer, word, state, i, false);
                     token << "<operator, " << word << ">\n";
-                    state = 0;
-                    word.clear();
                 }
                 else if (state == 20)
                 {
-                    getWord(buffer, word);
+                    getWord(buffer, word, state, i);
                     token << "<operator, " << word << ">\n";
-                    i--;
-                    state = 0;
-                    word.clear();
                 }
                 else if (state == 21)
                 {
-                    getWord(buffer, word, false);
+                    getWord(buffer, word, state, i, false);
                     token << "<punctuation, " << word << ">\n";
-                    state = 0;
-                    word.clear();
                 }
                 else if (state == 22)
                 {
-                    getWord(buffer, word);
+                    getWord(buffer, word, state, i);
                     token << "<punctuation, " << word << ">\n";
-                    i--;
-                    state = 0;
-                    word.clear();
                 }
                 else if (state == 23)
                 {
-                    getWord(buffer, word, false);
+                    getWord(buffer, word, state, i, false);
                     if (!std::isspace(word[0]))
                         error << "<error, " << word << ">\n";
-                    state = 0;
-                    word.clear();
                 }
                 else if (state == 24)
                 {
-                    getWord(buffer, word);
+                    getWord(buffer, word, state, i);
                     if (!std::isspace(word[0]))
                         error << "<error, " << word << ">\n";
-                    i--;
-                    state = 0;
-                    word.clear();
                 }
+                word.clear();
             }
         }
+        input.close();
+        token.close();
+        error.close();
     }
 
-    void getWord(std::queue<char> &Queue, std::string &word, bool clear = true) const
+    void getWord(std::queue<char> &Queue, std::string &word,
+                 unsigned int &state, int &index, bool clear = true) const
     {
+        int i = clear ? 1 : 0;
         int size = Queue.size();
-        if (clear)
-            size--;
-        int i = 0;
         for (; i < size; i++)
         {
             word.push_back(Queue.front());
             Queue.pop();
         }
         if (clear)
+        {
             Queue.pop();
+            index--;
+        }
+        state = 0;
     }
 
-    void getNextState(const char &Char, int &state) const
+    void getNextState(const char &Char, unsigned int &state) const
     {
-        if (isLetter(Char))
+        if (std::isalpha(Char))
         {
             state = dfa[state][sigma.getValue("L")];
         }
-        else if (isNumber(Char))
+        else if (std::isdigit(Char))
         {
             state = dfa[state][sigma.getValue("N")];
         }
         else
         {
-            state = dfa[state][sigma.getValue(std::string(1, Char))];
+            int index = sigma.getValue(std::string(1, Char));
+            state = dfa[state][index != -1 ? index : sigma.getValue("O")];
         }
     }
 
@@ -213,29 +187,8 @@ public:
         keyword.display();
     }
 
-    bool isNumber(char const &Char) const
-    {
-        char numbers[] = {"0123456789"};
-        for (int i = 0; i < sizeof(numbers) / sizeof(numbers[0]); i++)
-        {
-            if (Char == numbers[i])
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    bool isLetter(char const &Char) const
-    {
-        if ((Char >= 'A' && Char <= 'Z') || (Char >= 'a' && Char <= 'z'))
-        {
-            return true;
-        }
-        return false;
-    }
-
     void tokenize(std::string const &str, const char *delim,
-                  std::vector<std::string> &out)
+                  std::vector<std::string> &out) const
     {
         char *token = strtok(const_cast<char *>(str.c_str()), delim);
         while (token != nullptr)
